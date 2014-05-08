@@ -1,7 +1,7 @@
 /*
- * -*- compile-command: "gcc -o guile-example guile-example.c `pkg-config --cflags --libs guile-2.0` -lpari -lgmp" -*-
+ * -*- compile-command: "gcc -o pari-scm pari-scm.c `pkg-config --cflags --libs guile-2.0` -lpari -lgmp" -*-
  *
- * -*- compile-command: "gcc -L ~/src/pari-git/GP.dbg/lib -I ~/src/pari-git/GP.dbg/include -o guile-example guile-example.c `pkg-config --cflags --libs guile-2.0` -lpari -lgmp" -*-
+ * -*- compile-command: "gcc -L ~/src/pari-git/GP.dbg/lib -I ~/src/pari-git/GP.dbg/include -o pari-scm pari-scm.c `pkg-config --cflags --libs guile-2.0` -lpari -lgmp" -*-
  *
  */
 

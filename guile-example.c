@@ -1,7 +1,9 @@
 /*
+ * -*- compile-command: "gcc -o guile-example guile-example.c `pkg-config --cflags --libs guile-2.0` -lpari -lgmp" -*-
+ *
  * -*- compile-command: "gcc -L ~/src/pari-git/GP.dbg/lib -I ~/src/pari-git/GP.dbg/include -o guile-example guile-example.c `pkg-config --cflags --libs guile-2.0` -lpari -lgmp" -*-
  *
- * -*- compile-command: "gcc -o guile-example guile-example.c `pkg-config --cflags --libs guile-2.0` -lpari -lgmp" -*- */
+ */
 
 /*
  * Based on example from Section 2.3 of the Guile manual.

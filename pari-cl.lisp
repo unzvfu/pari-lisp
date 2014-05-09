@@ -51,9 +51,12 @@
 (defcfun "pari_init_opts" :void
   (stacksize sizet)
   (maxprime :ulong)
-  (flags :long))
+  (opts :ulong))
 
 (defcfun "pari_close" :void)
+
+(defcfun "pari_close_opts" :void
+  (init_opts :ulong))
 
 (defcfun "stoi" GEN (x :long))
 (defcfun "utoi" GEN (x :ulong))

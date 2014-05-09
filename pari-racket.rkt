@@ -57,9 +57,3 @@
 (define-pari gsqr (_fun _GEN -> _GEN))
 
 (define-pari factor (_fun _GEN -> _GEN))
-
-;; (pari-init-opts 16000000 0 5)
-;; (define a (utoi 8))
-;; (define b (stoi -9))
-;; (define c (gmul a (gsqr b)))
-;; (define f (factor c))

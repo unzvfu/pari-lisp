@@ -51,6 +51,8 @@
 (defcfun "stoi" GEN (x :long))
 (defcfun "utoi" GEN (x :ulong))
 (defcfun "factor" GEN (x GEN))
+(defcfun "output" GEN (x GEN))
+
 (defcfun "gadd" GEN (x GEN) (y GEN))
 (defcfun "sub" GEN (x GEN) (y GEN))
 (defcfun "gneg" GEN (x GEN))

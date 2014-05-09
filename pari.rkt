@@ -26,21 +26,6 @@
   (lambda (x)  ; FIXME: Use OUTPUT instead
     (error '_GEN "cannot be used as an output type")))
 
-;; NB: For some reason Pari initialisation goes awry and Racket
-;; segfaults if INIT_SIGm is enabled in PARI-INIT-OPTS, which it is by
-;; default in PARI-INIT.  So to initialise Pari one runs
-;;
-;;   (pari-init-opts *stack-size* *maxprime* 5)
-;;
-;; since 5 == INIT_DFTm | INIT_JMPm, which are the default options
-;; less INIT_SIGm.
-
-;; NB: If PARI-CLOSE is called, then the next command, including
-;; exiting immediately afterwards (with CTRL-d for example), causes
-;; Racket to segfault.  This happens whether or not INIT_JMPm is
-;; activated.  It does NOT happen if we initialise Pari and then exit
-;; from Racket without calling PARI-CLOSE.
-
 (define-pari pari-init (_fun _size _ulong -> _void)
   #:c-id pari_init)
 (define-pari pari-init-opts (_fun _size _ulong _ulong -> _void)

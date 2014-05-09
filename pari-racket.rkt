@@ -32,7 +32,8 @@
 
 (define *path-to-libpari* "/home/hlaw/local/lib/libpari.so")
 
-(define-ffi-definer define-pari (ffi-lib *path-to-libpari*))
+(define libpari (ffi-lib *path-to-libpari*))
+(define-ffi-definer define-pari libpari)
 
 (define-pari pari-init (_fun _size _ulong -> _void)
   #:c-id pari_init)

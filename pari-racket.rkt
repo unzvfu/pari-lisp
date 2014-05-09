@@ -13,6 +13,12 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;
+;; Usage: Fire up Racket then type
+;;
+;; -> ,en "pari-racket.rkt"
+;;
+
 #lang racket/base
 (require ffi/unsafe
          ffi/unsafe/define)

@@ -13,6 +13,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;
+;; Usage: Fire up your favourite lisp then type
+;;
+;; * (load "pari-cl.lisp")
+;; * (in-package :cl-pari)
+;;
+
 
 (asdf:oos 'asdf:load-op :cffi)
 

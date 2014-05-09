@@ -21,8 +21,9 @@
 
 (in-package :cl-pari)
 
+;; NB: ".so" is added to the file name.
 (define-foreign-library libpari
-    (t (:default "libpari")))
+    (t (:default "/home/hlaw/local/lib/libpari")))
 
 (use-foreign-library libpari)
 

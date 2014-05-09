@@ -43,6 +43,7 @@
 (defctype sizet :uint)
 
 (defctype GEN (:pointer :long))
+(defctype pari_sp :ulong)
 
 (defcfun "pari_init" :void
   (stacksize sizet)

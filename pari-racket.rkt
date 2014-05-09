@@ -44,6 +44,7 @@
   #:c-id pari_close_opts)
 
 (define-cpointer-type _GEN) ; #f scm-to-gen output)
+(define pari_sp _ulong)
 
 (define-pari stoi (_fun _long -> _GEN))
 (define-pari utoi (_fun _ulong -> _GEN))

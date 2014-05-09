@@ -17,7 +17,14 @@
 ;; Usage: Fire up Racket then type
 ;;
 ;; -> ,en "pari-racket.rkt"
-;;
+;; "pari-racket.rkt"> (pari-init-opts (expt 2 24) 0 5)
+;; "pari-racket.rkt"> (define a (utoi 8))
+;; "pari-racket.rkt"> (define b (stoi -9))
+;; "pari-racket.rkt"> (define c (gmul a (gsqr b)))
+;; "pari-racket.rkt"> (define f (factor c))
+;; "pari-racket.rkt"> (output f)
+;; [2,3;3,4]
+
 
 #lang racket/base
 (require ffi/unsafe

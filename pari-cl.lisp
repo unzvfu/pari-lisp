@@ -65,7 +65,7 @@
 (defcfun "output" GEN (x GEN))
 
 (defcfun "gadd" GEN (x GEN) (y GEN))
-(defcfun "sub" GEN (x GEN) (y GEN))
+(defcfun "gsub" GEN (x GEN) (y GEN))
 (defcfun "gneg" GEN (x GEN))
 (defcfun "gmul" GEN (x GEN) (y GEN))
 (defcfun "gdiv" GEN (x GEN) (y GEN))

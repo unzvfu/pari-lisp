@@ -34,9 +34,7 @@
   #:c-id pari_close)
 (define-pari stoi (_fun _long -> _GEN))
 (define-pari utoi (_fun _ulong -> _GEN))
-(define-pari factor (_fun _GEN -> _GEN))
 (define-pari output (_fun _GEN -> _void))
-
 
 (define-pari gadd (_fun _GEN _GEN -> _GEN))
 (define-pari gsub (_fun _GEN _GEN -> _GEN))
@@ -45,6 +43,7 @@
 (define-pari gdiv (_fun _GEN _GEN -> _GEN))
 (define-pari gsqr (_fun _GEN -> _GEN))
 
+(define-pari factor (_fun _GEN -> _GEN))
 
 ;; (pari-init-opts 16000000 0 5)
 ;; (define a (utoi 8))

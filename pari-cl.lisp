@@ -22,6 +22,8 @@
 (in-package :cl-pari)
 
 ;; NB: ".so" is added to the file name.
+;; FIXME: Work out why specifying simply "libpari" doesn't work,
+;; i.e. why isn't LIBRARY_PATH used to search for libraries?
 (define-foreign-library libpari
     (t (:default "/home/hlaw/local/lib/libpari")))
 

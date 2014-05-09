@@ -47,6 +47,8 @@
 (define-cpointer-type _GEN) ; #f scm-to-gen output)
 (define _pari_sp _ulong)
 
+;; FIXME: This doesn't work as is.  I may need to wrap access to avma
+;; in get/set functions.
 (define-pari avma _pari_sp)
 
 (define-pari stoi (_fun _long -> _GEN))

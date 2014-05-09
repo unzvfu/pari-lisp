@@ -34,20 +34,27 @@
 
 (define-ffi-definer define-pari (ffi-lib *path-to-libpari*))
 
-(define-cpointer-type _GEN #f
-  #f ; FIXME: Add this
-  (lambda (x)  ; FIXME: Use OUTPUT instead
-    (error '_GEN "cannot be used as an output type")))
-
 (define-pari pari-init (_fun _size _ulong -> _void)
   #:c-id pari_init)
 (define-pari pari-init-opts (_fun _size _ulong _ulong -> _void)
   #:c-id pari_init_opts)
 (define-pari pari-close (_fun -> _void)
   #:c-id pari_close)
+(define-pari pari-close-opts (_fun _ulong -> _void)
+  #:c-id pari_close_opts)
+
+(define-cpointer-type _GEN) ; #f scm-to-gen output)
+
 (define-pari stoi (_fun _long -> _GEN))
 (define-pari utoi (_fun _ulong -> _GEN))
+(define-pari dbltor (_fun _double -> _GEN))
 (define-pari output (_fun _GEN -> _void))
+
+(define (scm-to-gen x)
+  ;; FIXME: Handle scheme bignums (integer?) correctly
+  (cond ((fixnum? x) (stoi x))
+        ((flonum? x) (dbltor x))
+        (else (error x "cannot be coverted to a GEN"))))
 
 (define-pari gadd (_fun _GEN _GEN -> _GEN))
 (define-pari gsub (_fun _GEN _GEN -> _GEN))

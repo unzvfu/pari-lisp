@@ -1,5 +1,5 @@
-pari-scm
-========
+pari-lisp
+=========
 
 Lisp bindings for Pari for a few different lisps.
 Currently planned are

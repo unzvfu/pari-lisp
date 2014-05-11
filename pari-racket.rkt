@@ -54,14 +54,14 @@
 (define (scm-to-gen x)
   ;; FIXME: Handle scheme bignums (integer?) correctly
   (printf "SCM --> GEN with x = ~a~%" x)
-  (cond ((GEN? x) x)
-        ((zero? x) gen_0)
-        ((fixnum? x) (stoi x))
-        ((flonum? x) (dbltor x))
-        (else (error x "cannot be coverted to a GEN"))))
+  (cond [(GEN? x) x]
+        [(zero? x) gen_0]
+        [(fixnum? x) (stoi x)]
+        [(flonum? x) (dbltor x)]
+        [else (error x "cannot be coverted to a GEN")]))
 
 (define (gen-to-scm x)
-  (let ((s (gen-to-str x)))
+  (let ([s (gen-to-str x)])
     (printf "GEN --> SCM with x = (GEN) ~a~%" s)
     (free s))
   x)

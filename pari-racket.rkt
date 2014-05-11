@@ -47,9 +47,22 @@
 (define-cpointer-type _GEN) ; #f scm-to-gen output)
 (define _pari_sp _ulong)
 
-;; FIXME: This doesn't work as is.  I may need to wrap access to avma
-;; in get/set functions.
+;; Pari needs to be initialised in order to access things like avma,
+;; gen_0, etc.
+(pari-init-opts (expt 2 24) 0 5)
+
+(define-pari gen_0 _GEN)
+(define-pari gen_1 _GEN)
+(define-pari gen_m1 _GEN)
+(define-pari gen_2 _GEN)
+
+;; FIXME: This doesn't work as is: it simply reads avma once and
+;; doesn't update it.  I may need to wrap access to avma in get/set
+;; functions.
 (define-pari avma _pari_sp)
+
+(define (get-avma)
+  (get-ffi-obj "avma" libpari _pari_sp))
 
 (define-pari stoi (_fun _long -> _GEN))
 (define-pari utoi (_fun _ulong -> _GEN))

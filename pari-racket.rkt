@@ -79,10 +79,7 @@
 (define-pari gen_m1 _GEN)
 (define-pari gen_2 _GEN)
 
-;; FIXME: This doesn't work as is: it simply reads avma once and
-;; doesn't update it.  I may need to wrap access to avma in get/set
-;; functions.
-(define-pari avma _pari_sp)
+(define-c avma libpari _pari_sp)
 
 (define (get-avma)
   (get-ffi-obj "avma" libpari _pari_sp))

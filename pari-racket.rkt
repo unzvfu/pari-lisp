@@ -44,7 +44,30 @@
 (define-pari pari-close-opts (_fun _ulong -> _void)
   #:c-id pari_close_opts)
 
-(define-cpointer-type _GEN) ; #f scm-to-gen output)
+(define-pari gen-to-str (_fun _pointer -> _bytes)
+  #:c-id GENtostr)
+
+;; FIXME: For some reason this function is very often (practically
+;; every time) called for arguments to functions expecting _GEN's with
+;; x *already* a _GEN.  Hence the guard in the first condition in the
+;; COND form (which requires a forward reference to GEN?).
+(define (scm-to-gen x)
+  ;; FIXME: Handle scheme bignums (integer?) correctly
+  (printf "SCM --> GEN with x = ~a~%" x)
+  (cond ((GEN? x) x)
+        ((zero? x) gen_0)
+        ((fixnum? x) (stoi x))
+        ((flonum? x) (dbltor x))
+        (else (error x "cannot be coverted to a GEN"))))
+
+(define (gen-to-scm x)
+  (let ((s (gen-to-str x)))
+    (printf "GEN --> SCM with x = (GEN) ~a~%" s)
+    (free s))
+  x)
+
+(define-cpointer-type _GEN #f scm-to-gen gen-to-scm)
+
 (define _pari_sp _ulong)
 
 ;; Pari needs to be initialised in order to access things like avma,
@@ -68,12 +91,6 @@
 (define-pari utoi (_fun _ulong -> _GEN))
 (define-pari dbltor (_fun _double -> _GEN))
 (define-pari output (_fun _GEN -> _void))
-
-(define (scm-to-gen x)
-  ;; FIXME: Handle scheme bignums (integer?) correctly
-  (cond ((fixnum? x) (stoi x))
-        ((flonum? x) (dbltor x))
-        (else (error x "cannot be coverted to a GEN"))))
 
 (define-pari gadd (_fun _GEN _GEN -> _GEN))
 (define-pari gsub (_fun _GEN _GEN -> _GEN))

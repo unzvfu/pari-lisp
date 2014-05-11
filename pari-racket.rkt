@@ -83,3 +83,9 @@
 (define-pari gsqr (_fun _GEN -> _GEN))
 
 (define-pari factor (_fun _GEN -> _GEN))
+
+(define (+ . args)
+  (foldl gadd gen_0 args))
+
+(define (* . args)
+  (foldl gmul gen_1 args))

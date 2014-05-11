@@ -81,9 +81,6 @@
 
 (define-c avma libpari _pari_sp)
 
-(define (get-avma)
-  (get-ffi-obj "avma" libpari _pari_sp))
-
 (define-pari stoi (_fun _long -> _GEN))
 (define-pari utoi (_fun _ulong -> _GEN))
 (define-pari dbltor (_fun _double -> _GEN))

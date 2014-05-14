@@ -44,7 +44,7 @@
 (define-pari pari-close-opts (_fun _ulong -> _void)
   #:c-id pari_close_opts)
 
-(define-pari gen-to-str (_fun _pointer -> _bytes)
+(define-pari gen-to-str (_fun _pointer -> _string)
   #:c-id GENtostr)
 
 ;; FIXME: For some reason this function is very often (practically
@@ -54,19 +54,36 @@
 (define (scm-to-gen x)
   ;; FIXME: Handle scheme bignums (integer?) correctly
   (printf "SCM --> GEN with x = ~a~%" x)
-  (cond [(GEN? x) x]
+  (cond [(gen-hdl? x) (gen-hdl-ref x)]
         [(zero? x) gen_0]
-        [(fixnum? x) (stoi x)]
-        [(flonum? x) (dbltor x)]
+        [(fixnum? x) (cptr-to-gen (stoi x))]
+        [(flonum? x) (cptr-to-gen (dbltor x))]
         [else (error x "cannot be coverted to a GEN")]))
 
+;; FIXME: I'm supposed to free s, but it causes a segfault unless
+;; the prototype for gen-to-string returns a _bytes instead of a
+;; _string
 (define (gen-to-scm x)
   (let ([s (gen-to-str x)])
-    (printf "GEN --> SCM with x = (GEN) ~a~%" s)
-    (free s))
-  x)
+    (printf "GEN --> SCM with x = (GEN) ~a~%" s))
+    ;(free s))
+  (gen-hdl x))
 
 (define-cpointer-type _GEN #f scm-to-gen gen-to-scm)
+
+(define (cptr-to-gen p)
+  (cpointer-push-tag! p 'blah)
+  p)
+
+(define (gen-print x port mode)
+  (let ([s (gen-to-str (gen-hdl-ref x))])
+    (printf "Print override~%")
+    (write-string s port)))
+    ;(free s))) ; FIXME: See comment in gen-to-scm
+
+(struct gen-hdl (ref))
+        ;; #:methods gen:custom-write
+        ;; [(define write-proc gen-print)])
 
 (define _pari_sp _ulong)
 
@@ -81,10 +98,10 @@
 
 (define-c avma libpari _pari_sp)
 
-(define-pari stoi (_fun _long -> _GEN))
-(define-pari utoi (_fun _ulong -> _GEN))
-(define-pari dbltor (_fun _double -> _GEN))
-(define-pari output (_fun _GEN -> _void))
+(define-pari stoi (_fun _long -> _pointer))
+(define-pari utoi (_fun _ulong -> _pointer))
+(define-pari dbltor (_fun _double -> _pointer))
+(define-pari output (_fun _pointer -> _void))
 
 (define-pari gadd (_fun _GEN _GEN -> _GEN))
 (define-pari gsub (_fun _GEN _GEN -> _GEN))

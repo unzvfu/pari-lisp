@@ -63,6 +63,7 @@
   (gen-hdl-str x))
 
 ;; Pari stack
+(define _pari_sp _ulong)
 (define-c avma libpari _pari_sp)
 
 ;; Constants
@@ -91,8 +92,6 @@
   (gen-hdl x))
 
 (define-cpointer-type _GEN #f scm-to-gen gen-to-scm)
-
-(define _pari_sp _ulong)
 
 ;; Pari needs to be initialised in order to access things like avma,
 ;; gen_0, etc.

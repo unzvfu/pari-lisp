@@ -113,3 +113,39 @@
 
 (define (* . args)
   (foldl gmul gen_1 args))
+
+;; Documentation for GP prototypes is in Section 5.8.3.
+(define return-types
+  #hash((#\i . _int)
+        (#\l . _long)
+        (#\v . _void)
+        ;; FIXME: GEN which is not gerepileupto-safe
+        (#\m . _GEN)))
+(define arg-types
+  #hash(;; Mandatory arguments
+        (#\G . 0)
+        (#\& . 0) ; Need to "reinterpret" what this means.
+        (#\L . 0)
+        (#\V . 0) ; Unnecessary?
+        (#\n . 0)
+        (#\W . 0)
+        (#\r . 0)
+        (#\s . 0)
+        (#\I . 0) ; These last three will have to be treated specially
+        (#\E . 0) ; if we are to use them at all.
+        (#\J . 0)
+        ;; Automatic arguments
+        (#\f . 0)
+        (#\p . 0)
+        (#\P . 0)
+        ;; Syntax requirements
+        (#\= . 0)
+        ;; Optional arguments and default values
+        (#\* . 0) ; Only valid after E or s
+        (#\D . 0) ; Default value follows: Dvalue,type,
+        ))        ; Special treatment of D when followed by G&rsVIEn
+
+(define (gp-proto-to-func-type proto)
+  (list (hash-ref return-types (string-ref proto 0))
+        (map (lambda (k) (hash-ref arg-types k))
+             (string->list (substring proto 1)))))

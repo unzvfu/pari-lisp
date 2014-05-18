@@ -66,12 +66,6 @@
 (define _pari_sp _ulong)
 (define-c avma libpari _pari_sp)
 
-;; Constants
-(define-pari gen_0 _GEN)
-(define-pari gen_1 _GEN)
-(define-pari gen_m1 _GEN)
-(define-pari gen_2 _GEN)
-
 ;; Conversion routines return _pointers.
 (define-pari stoi (_fun _long -> _pointer))
 (define-pari utoi (_fun _ulong -> _pointer))  ; Unnecessary?
@@ -96,6 +90,12 @@
 ;; Pari needs to be initialised in order to access things like avma,
 ;; gen_0, etc.
 (pari-init-opts (expt 2 24) 0 5)
+
+;; Constants
+(define-pari gen_0 _GEN)
+(define-pari gen_1 _GEN)
+(define-pari gen_m1 _GEN)
+(define-pari gen_2 _GEN)
 
 (define-pari GENtostr (_fun _GEN -> _string))
 

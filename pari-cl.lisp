@@ -59,10 +59,10 @@
 (defcfun "pari_close_opts" :void
   (init_opts :ulong))
 
+(defcfun "GENtostr" :string (x GEN))
 (defcfun "stoi" GEN (x :long))
-(defcfun "utoi" GEN (x :ulong))
-(defcfun "factor" GEN (x GEN))
-(defcfun "output" GEN (x GEN))
+(defcfun "utoi" GEN (x :ulong)) ; Unnecessary?
+(defcfun "dbltor" GEN (x :double))
 
 (defcfun "gadd" GEN (x GEN) (y GEN))
 (defcfun "gsub" GEN (x GEN) (y GEN))
@@ -70,3 +70,4 @@
 (defcfun "gmul" GEN (x GEN) (y GEN))
 (defcfun "gdiv" GEN (x GEN) (y GEN))
 (defcfun "gsqr" GEN (x GEN))
+(defcfun "factor" GEN (x GEN))

@@ -147,5 +147,6 @@
 
 (define (gp-proto-to-func-type proto)
   (list (hash-ref return-types (string-ref proto 0))
+        '->
         (map (lambda (k) (hash-ref arg-types k))
              (string->list (substring proto 1)))))

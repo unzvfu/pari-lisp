@@ -26,7 +26,7 @@
 ;; [2,3;3,4]
 
 
-#lang racket/base
+#lang racket
 (require ffi/unsafe
          ffi/unsafe/define)
 

@@ -123,9 +123,9 @@
         (#\m . _GEN)))
 (define arg-types
   #hash(;; Mandatory arguments
-        (#\G . 0)
+        (#\G . _GEN)
         (#\& . 0) ; Need to "reinterpret" what this means.
-        (#\L . 0)
+        (#\L . _long)
         (#\V . 0) ; Unnecessary?
         (#\n . 0)
         (#\W . 0)

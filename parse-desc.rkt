@@ -15,11 +15,11 @@
 
 #lang racket
 
-(define descpath "/home/hlaw/src/pari/desc/pari.desc")
+(define descpath "/home/hlaw/src/pari/src/desc/pari.desc")
 
 (define (field-print f port mode)
-  (write-string port
-                (format "~a: ~a" (field-title f) (field-content f))))
+  (write-string (format "~a: ~a" (field-title f) (field-content f))
+                port))
 
 (struct field (title content)
         #:methods gen:custom-write
@@ -35,11 +35,40 @@
           [else (loop (rest lst) (add1 idx))])))
 
 (define (line->field line)
-  (let* ([idx (index-of (in-string line) #\:)]
+  (let* ([idx (index-of (string->list line) #\:)]
          [title (substring line 0 idx)]
          [content (string-trim (substring line (add1 idx)))])
     (field title content)))
 
+(define (next-func-desc lines)
+  (let-values ([(desc rest)
+                (splitf-at lines
+                           (lambda (line)
+                             (not (= (string-length line) 0))))])
+    (values desc (drop rest 1))))
+
+(define (starts-with? str ch)
+  (equal? (string-ref str 0) ch))
+
+(define (remove-head lst)
+  (values (car lst) (cdr lst)))
+(define (remove-tail lst)
+  (let-values ([(beginning last) (split-at-right lst 1)])
+    (values beginning (car last))))
+
+(define (normalise-func-desc first-bit last-bit)
+  (if (empty? last-bit)
+      first-bit
+      (let-values ([(elt rest) (remove-head last-bit)])
+        (normalise-func-desc
+         (if (starts-with? elt #\space)
+             (let-values ([(beginning tail) (remove-tail first-bit)])
+               (append beginning
+                       (list (string-join (list tail (substring elt 1))
+                                          (string #\newline)))))
+             (append first-bit (list elt)))
+         rest))))
+
 (define (file->fields fname)
   (let ([lines (file->lines fname)])
-    (map line->field lines)))
+    fname))

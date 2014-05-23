@@ -1,7 +1,7 @@
 pari-lisp
 =========
 
-Lisp bindings for Pari for a few different lisps.
+Lisp bindings for [Pari](http://pari.math.u-bordeaux.fr/) for a few different lisps.
 Currently planned are
 
  - Racket: http://docs.racket-lang.org/foreign/intro.html

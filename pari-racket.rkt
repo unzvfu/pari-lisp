@@ -77,7 +77,9 @@
     p)
   ;; FIXME: Handle scheme bignums (integer?) correctly
   (cond [(gen-hdl? x) (gen-hdl-ref x)]
-        ;;[(zero? x) gen_0] ; FIXME: This doesn't work for some reason
+        ;; FIXME: Not sure if should make gen_0 etc. _pointers instead
+        ;; of _GENs.
+        [(zero? x) (gen-hdl-ref gen_0)]
         [(fixnum? x) (mkgenp (stoi x))]
         [(flonum? x) (mkgenp (dbltor x))]
         [else (error x "cannot be coverted to a GEN")]))
@@ -92,6 +94,7 @@
 (pari-init-opts (expt 2 24) 0 5)
 
 ;; Constants
+;; FIXME: Not sure if should make gen_0 etc. _pointers instead of _GENs.
 (define-pari gen_0 _GEN)
 (define-pari gen_1 _GEN)
 (define-pari gen_m1 _GEN)

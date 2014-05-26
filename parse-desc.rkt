@@ -17,14 +17,6 @@
 
 (define descpath "/home/hlaw/src/pari/src/desc/pari.desc")
 
-(define (field-print f port mode)
-  (write-string (format "~a: ~a" (field-title f) (field-content f))
-                port))
-
-(struct field (title content)
-        #:methods gen:custom-write
-        [(define write-proc field-print)])
-
 ;; FIXME: It's hard to believe that this function doesn't exist
 ;; somewhere in Racket.  But
 ;;   http://stackoverflow.com/a/15871126
@@ -34,11 +26,11 @@
           [(equal? (first lst) ele) idx]
           [else (loop (rest lst) (add1 idx))])))
 
-(define (line->field line)
+(define (line->pair line)
   (let* ([idx (index-of (string->list line) #\:)]
          [title (substring line 0 idx)]
          [content (string-trim (substring line (add1 idx)))])
-    (field title content)))
+    (cons title content)))
 
 (define (next-func-desc lines)
   (let-values ([(desc rest)
@@ -87,5 +79,9 @@
 (define (lines->desclist lines)
   (map normalise-func-desc (split-desc lines)))
 
+(define (desclist->fieldlist desclist)
+  (map line->pair desclist))
+
 (define (file->fields fname)
-  (lines->desclist (file->lines fname)))
+  (map (compose1 make-immutable-hash desclist->fieldlist)
+       (lines->desclist (file->lines fname))))

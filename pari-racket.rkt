@@ -70,6 +70,8 @@
 (define-pari stoi (_fun _long -> _pointer))
 (define-pari utoi (_fun _ulong -> _pointer))  ; Unnecessary?
 (define-pari dbltor (_fun _double -> _pointer))
+(define-pari gtos (_fun _pointer -> _long))
+(define-pari gtodouble (_fun _pointer -> _double))
 
 (define (scm-to-gen x)
   (define (mkgenp p)
@@ -101,6 +103,8 @@
 (define-pari gen_2 _GEN)
 
 (define-pari GENtostr (_fun _GEN -> _string))
+(define-pari gp-read-str (_fun _string -> _pointer)
+  #:c-id gp_read_str)
 
 (define-pari gadd (_fun _GEN _GEN -> _GEN))
 (define-pari gsub (_fun _GEN _GEN -> _GEN))
@@ -159,12 +163,18 @@
         ))        ; Special treatment of D when followed by G&rsVIEn
 
 ;; Given a prototype string of the form "DV,T,", returns values of a
-;; ctype corresponding to T and a Racket value corresponding to V.
+;; ctype corresponding to T and a V of type T.
 (define (handle-default proto)
   (let* ([splt (string-split proto ",")]
-         [valuestr (substring (first splt) 1)]
-         [typecode (string-ref (second splt) 0)])
-    (values (hash-ref arg-types typecode) valuestr)))
+         [val (gp-read-str (substring (first splt) 1))]
+         [typecode (hash-ref arg-types (string-ref (second splt) 0))])
+    (values typecode
+            ;; FIXME: This cond statement should be put somewhere more
+            ;; accessible.  Also, need to check what other types are
+            ;; possible.
+            (cond [(equal? typecode '_GEN) val]
+                  [(equal? typecode '_long) (gtos val)]
+                  [else (error typecode "not recognised")]))))
 
 (define (gp-proto-to-func-type proto)
   (let* ([rtn (hash-ref return-types (string-ref proto 0) #f)]

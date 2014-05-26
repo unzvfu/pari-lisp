@@ -57,6 +57,15 @@
   (let-values ([(beginning last) (split-at-right lst 1)])
     (values beginning (car last))))
 
+(define (stream->list fn lines)
+  (define (iter acc rest)
+    (if (empty? rest)
+        acc
+        (let-values ([(next tail) (fn rest)])
+          (iter (append acc (list next)) tail))))
+  (iter '() lines))
+
+;; FIXME: Rewrite this in terms of stream->list
 (define (normalise-func-desc desc)
   (define (iter first-bit last-bit)
     (if (empty? last-bit)
@@ -72,20 +81,11 @@
            rest))))
   (iter '() desc))
 
-(define (stream->list fn lines)
-  (define (iter acc rest)
-    (if (empty? rest)
-        acc
-        (let-values ([(next tail) (fn rest)])
-          (iter (append acc (list next)) tail))))
-  (iter '() lines))
-
 (define (split-desc lines)
   (stream->list next-func-desc lines))
 
 (define (lines->desclist lines)
-  (map (compose1 line->field normalise-func-desc)
-       (split-desc lines)))
+  (map normalise-func-desc (split-desc lines)))
 
 (define (file->fields fname)
   (lines->desclist (file->lines fname)))

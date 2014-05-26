@@ -52,6 +52,7 @@
 
 (define (remove-head lst)
   (values (car lst) (cdr lst)))
+
 (define (remove-tail lst)
   (let-values ([(beginning last) (split-at-right lst 1)])
     (values beginning (car last))))
@@ -68,6 +69,17 @@
                                           (string #\newline)))))
              (append first-bit (list elt)))
          rest))))
+
+(define (stream->list fn lines)
+  (define (iter acc rest)
+    (if (empty? rest)
+        acc
+        (let-values ([(next tail) (fn rest)])
+          (iter (append acc (list next)) tail))))
+  (iter '() lines))
+
+(define (split-desc lines)
+  (stream->list next-func-desc lines))
 
 (define (file->fields fname)
   (let ([lines (file->lines fname)])

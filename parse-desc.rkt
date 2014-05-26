@@ -36,7 +36,7 @@
   (let-values ([(desc rest)
                 (splitf-at lines
                            (lambda (line)
-                             (not (= (string-length line) 0))))])
+                             (not (equal? line ""))))])
     (values desc (drop rest 1))))
 
 (define (starts-with? str ch)

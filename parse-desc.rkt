@@ -57,18 +57,20 @@
   (let-values ([(beginning last) (split-at-right lst 1)])
     (values beginning (car last))))
 
-(define (normalise-func-desc first-bit last-bit)
-  (if (empty? last-bit)
-      first-bit
-      (let-values ([(elt rest) (remove-head last-bit)])
-        (normalise-func-desc
-         (if (starts-with? elt #\space)
-             (let-values ([(beginning tail) (remove-tail first-bit)])
-               (append beginning
-                       (list (string-join (list tail (substring elt 1))
-                                          (string #\newline)))))
-             (append first-bit (list elt)))
-         rest))))
+(define (normalise-func-desc desc)
+  (define (iter first-bit last-bit)
+    (if (empty? last-bit)
+        first-bit
+        (let-values ([(elt rest) (remove-head last-bit)])
+          (iter
+           (if (starts-with? elt #\space)
+               (let-values ([(beginning tail) (remove-tail first-bit)])
+                 (append beginning
+                         (list (string-join (list tail (substring elt 1))
+                                            (string #\newline)))))
+               (append first-bit (list elt)))
+           rest))))
+  (iter '() desc))
 
 (define (stream->list fn lines)
   (define (iter acc rest)
@@ -81,6 +83,9 @@
 (define (split-desc lines)
   (stream->list next-func-desc lines))
 
+(define (lines->desclist lines)
+  (map (compose1 line->field normalise-func-desc)
+       (split-desc lines)))
+
 (define (file->fields fname)
-  (let ([lines (file->lines fname)])
-    fname))
+  (lines->desclist (file->lines fname)))

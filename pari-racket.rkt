@@ -149,7 +149,9 @@
         ))        ; Special treatment of D when followed by G&rsVIEn
 
 (define (gp-proto-to-func-type proto)
-  (list (hash-ref return-types (string-ref proto 0))
-        '->
-        (map (lambda (k) (hash-ref arg-types k))
-             (string->list (substring proto 1)))))
+  (let* ([rt-type (hash-ref return-types (string-ref proto 0) #f)]
+         [arg-types (map (lambda (k) (hash-ref arg-types k))
+                         (string->list
+                          (substring proto (if rt-type 1 0))))])
+    (list* (if rt-type rt-type '_GEN) '-> arg-types)))
+

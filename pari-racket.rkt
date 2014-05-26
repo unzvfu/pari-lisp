@@ -158,10 +158,17 @@
         (#\D . 0) ; Default value follows: Dvalue,type,
         ))        ; Special treatment of D when followed by G&rsVIEn
 
+;; Given a prototype string of the form "DV,T,", returns values of a
+;; ctype corresponding to T and a Racket value corresponding to V.
+(define (handle-default proto)
+  (let* ([splt (string-split proto ",")]
+         [valuestr (substring (first splt) 1)]
+         [typecode (string-ref (second splt) 0)])
+    (values (hash-ref arg-types typecode) valuestr)))
+
 (define (gp-proto-to-func-type proto)
-  (let* ([rt-type (hash-ref return-types (string-ref proto 0) #f)]
-         [arg-types (map (lambda (k) (hash-ref arg-types k))
-                         (string->list
-                          (substring proto (if rt-type 1 0))))])
-    (list* (if rt-type rt-type '_GEN) '-> arg-types)))
+  (let* ([rtn (hash-ref return-types (string-ref proto 0) #f)]
+         [args (map (lambda (k) (hash-ref arg-types k))
+                    (string->list (substring proto (if rtn 1 0))))])
+    (list* (if rtn rtn '_GEN) '-> args)))
 

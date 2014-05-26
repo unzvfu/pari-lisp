@@ -117,6 +117,16 @@
 (define (* . args)
   (foldl gmul gen_1 args))
 
+;; We need to use these prototype codes to build wrappers for calls to
+;; libpari functions.  For example, given "mDx,G," for a function "F"
+;; we need to
+;; - produce the function signature (_fun _GEN -> _GEN) for F,
+;; - call (define-pari F/raw signature #:c-id F)
+;; - write a wrapper for F which
+;;   - sets the argument to x if not specified,
+;;   - calls F/raw
+;;   - calls gcopy on the result (because of the "m")
+
 ;; Documentation for GP prototypes is in Section 5.8.3.
 (define return-types
   #hash((#\i . _int)

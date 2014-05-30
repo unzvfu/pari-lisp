@@ -176,7 +176,7 @@
      (#\= . 0)
      ;; Optional arguments and default values
      (#\* . 0) ; Only valid after E or s
-     (#\D . ,handle-default) ; Default value follows: Dvalue,type,
+     (#\D . 0) ;,handle-default) ; Default value follows: Dvalue,type,
      )))        ; Special treatment of D when followed by G&rsVIEn
 
 (define (string-index-of str ch)

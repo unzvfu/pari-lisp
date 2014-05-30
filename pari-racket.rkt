@@ -138,29 +138,49 @@
         (#\v . _void)
         ;; FIXME: GEN which is not gerepileupto-safe
         (#\m . _GEN)))
+
+;; Each character maps to a function taking a string as input and
+;; returning the argument type and the unconsumed string.
 (define arg-types
-  #hash(;; Mandatory arguments
-        (#\G . _GEN)
-        (#\& . 0) ; Need to "reinterpret" what this means.
-        (#\L . _long)
-        (#\V . 0) ; Unnecessary?
-        (#\n . 0)
-        (#\W . 0)
-        (#\r . 0)
-        (#\s . 0)
-        (#\I . 0) ; These last three will have to be treated specially
-        (#\E . 0) ; if we are to use them at all.
-        (#\J . 0)
-        ;; Automatic arguments
-        (#\f . 0)
-        (#\p . 0)
-        (#\P . 0)
-        ;; Syntax requirements
-        (#\= . 0)
-        ;; Optional arguments and default values
-        (#\* . 0) ; Only valid after E or s
-        (#\D . 0) ; Default value follows: Dvalue,type,
-        ))        ; Special treatment of D when followed by G&rsVIEn
+  ;; NB: Can't use #hash(...) here because it QUOTEs its arguments,
+  ;; which makes specifying lambda's impossible; we need to QUASIQUOTE
+  ;; then UNQUOTE.
+  (make-immutable-hash
+   `(;; Mandatory arguments
+     (#\G . ,(lambda (str) (values '_GEN (substring str 1))))
+     (#\& . 0) ; Need to "reinterpret" what this means.
+     (#\L . ,(lambda (str) (values '_long (substring str 1))))
+     (#\V . 0) ; Unnecessary?
+     (#\n . 0)
+     (#\W . 0)
+     (#\r . 0)
+     (#\s . 0)
+     (#\I . 0) ; These last three will have to be treated specially
+     (#\E . 0) ; if we are to use them at all.
+     (#\J . 0)
+     ;; Automatic arguments
+     (#\f . 0)
+     (#\p . 0)
+     (#\P . 0)
+     ;; Syntax requirements
+     (#\= . 0)
+     ;; Optional arguments and default values
+     (#\* . 0) ; Only valid after E or s
+     (#\D . ,handle-default) ; Default value follows: Dvalue,type,
+     )))        ; Special treatment of D when followed by G&rsVIEn
+
+(define (string-index-of str ch)
+  (let ([len (string-length str)])
+    (let loop ([i 0])
+      (cond [(= len i) #f]
+            [(equal? (string-ref str i) ch) i]
+            [else (loop (add1 i))]))))
+
+(define (string-split-at str ch)
+  (let ([idx (string-index-of str ch)])
+    (if (not idx)
+        idx
+        (values (substring str 0 idx) (substring str (add1 idx))))))
 
 ;; Given a prototype string of the form "DV,T,", returns values of a
 ;; ctype corresponding to T and a V of type T.
@@ -175,6 +195,17 @@
             (cond [(equal? typecode '_GEN) val]
                   [(equal? typecode '_long) (gtos val)]
                   [else (error typecode "not recognised")]))))
+
+(define (parse-gp-proto proto)
+  (reverse
+   (let loop ([acc '()] [proto proto])
+     (if (= (string-length proto) 0)
+         acc
+         (let* ([code (string-ref proto 0)]
+                [parsefn (hash-ref arg-types code)])
+           (let-values ([(arg rest) (parsefn proto)])
+             (loop (cons arg acc) rest)))))))
+
 
 (define (gp-proto-to-func-type proto)
   (let* ([rtn (hash-ref return-types (string-ref proto 0) #f)]

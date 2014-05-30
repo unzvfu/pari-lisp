@@ -148,7 +148,12 @@
   (make-immutable-hash
    `(;; Mandatory arguments
      (#\G . ,(lambda (str) (values '_GEN (substring str 1))))
-     (#\& . 0) ; Need to "reinterpret" what this means.
+     ; Need to "reinterpret" what this means.  Should convert to a
+     ; function that returns multiple values.  In some cases the
+     ; reference is optional, in which case perhaps we should pass a
+     ; flag regarding whether or not the user wishes to calculate it;
+     ; or we could just *always* calculate it.
+     (#\& . 0)
      (#\L . ,(lambda (str) (values '_long (substring str 1))))
      (#\V . 0) ; Unnecessary?
      (#\n . 0)

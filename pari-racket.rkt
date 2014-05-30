@@ -112,6 +112,9 @@
 (define-pari gmul (_fun _GEN _GEN -> _GEN))
 (define-pari gdiv (_fun _GEN _GEN -> _GEN))
 (define-pari gsqr (_fun _GEN -> _GEN))
+(define-pari gsqrtn (_fun _GEN _GEN (zetan : (_ptr o _GEN)) _long
+                          -> (res : _GEN)
+                          -> (values res zetan)))
 
 (define-pari factor (_fun _GEN -> _GEN))
 

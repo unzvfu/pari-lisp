@@ -187,6 +187,9 @@
         idx
         (values (substring str 0 idx) (substring str (add1 idx))))))
 
+(define (member? target seq)
+  (sequence-ormap (lambda (curr) (equal? curr target)) seq))
+
 ;; Given a prototype string of the form "DV,T,", returns values of a
 ;; ctype corresponding to T and a V of type T.
 (define (handle-default proto)

@@ -170,6 +170,11 @@
      ;;   (function-ptr scm-fn (_fun _long -> _long)))
      ;; (define-blah capply
      ;;   (_fun (_pointer = c-ptr-to-scm-fn) _long -> _long))
+     ;;
+     ;; Can create a closure with snm_closure() in libpari, which
+     ;; takes an entree* and a t_VEC of data.  An entree* contains
+     ;; just plain old data, including a function pointer to the code
+     ;; to call.
      (#\I . 0) ; Closure whose value is ignored (used in for loops)
      (#\E . 0) ; Closure whose value is used (as in sum loops)
      (#\J . 0) ; implicit function of one argument (as in parsum loops)

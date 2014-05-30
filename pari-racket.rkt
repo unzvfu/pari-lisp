@@ -163,8 +163,14 @@
      (#\W . 0) ; a GEN that is an lvalue
      (#\r . 0) ; "raw" input
      (#\s . 0) ; "expanded" string
-     ; These last three will have to be treated specially if we are to
-     ; use them at all.
+     ;; Need to build closures from Racket functions.  Do this with
+     ;; code such as
+     ;;
+     ;; (define (scm-fn x) (* x (+ 7 x)))
+     ;; (define c-ptr-to-scm-fn
+     ;;   (function-ptr scm-fn (_fun _long -> _long)))
+     ;; (define-blah capply
+     ;;   (_fun (_pointer = c-ptr-to-scm-fn) _long -> _long))
      (#\I . 0) ; Closure whose value is ignored (used in for loops)
      (#\E . 0) ; Closure whose value is used (as in sum loops)
      (#\J . 0) ; implicit function of one argument (as in parsum loops)

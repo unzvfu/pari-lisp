@@ -156,20 +156,22 @@
      ; reference is optional, in which case perhaps we should pass a
      ; flag regarding whether or not the user wishes to calculate it;
      ; or we could just *always* calculate it.
-     (#\& . 0)
+     (#\& . 0) ; GEN*
      (#\L . ,(lambda (str) (values '_long (substring str 1))))
-     (#\V . 0) ; Unnecessary?
-     (#\n . 0)
-     (#\W . 0)
-     (#\r . 0)
-     (#\s . 0)
-     (#\I . 0) ; These last three will have to be treated specially
-     (#\E . 0) ; if we are to use them at all.
-     (#\J . 0)
+     (#\V . 0) ; Loop variable (unnecessary?)
+     (#\n . 0) ; variable number
+     (#\W . 0) ; a GEN that is an lvalue
+     (#\r . 0) ; "raw" input
+     (#\s . 0) ; "expanded" string
+     ; These last three will have to be treated specially if we are to
+     ; use them at all.
+     (#\I . 0) ; Closure whose value is ignored (used in for loops)
+     (#\E . 0) ; Closure whose value is used (as in sum loops)
+     (#\J . 0) ; implicit function of one argument (as in parsum loops)
      ;; Automatic arguments
-     (#\f . 0)
-     (#\p . 0)
-     (#\P . 0)
+     (#\f . 0) ; fake long* (i.e. unused return-value parameter)
+     (#\p . 0) ; real precision
+     (#\P . 0) ; series precision
      ;; Syntax requirements
      (#\= . 0)
      ;; Optional arguments and default values
@@ -223,4 +225,3 @@
          [args (map (lambda (k) (hash-ref arg-types k))
                     (string->list (substring proto (if rtn 1 0))))])
     (list* (if rtn rtn '_GEN) '-> args)))
-

@@ -138,6 +138,7 @@
 (define return-types
   #hash((#\i . _int)
         (#\l . _long)
+	(#\u . _ulong)
         (#\v . _void)
         ;; FIXME: GEN which is not gerepileupto-safe
         (#\m . _GEN)))
@@ -157,6 +158,7 @@
      ; calculate it; or we could just *always* calculate it.
      (#\& . 0) ; GEN*
      (#\L . ,(lambda (str) (values '_long (substring str 1))))
+     (#\U . ,(lambda (str) (values '_ulong (substring str 1))))
      (#\V . 0) ; Loop variable (unnecessary?)
      (#\n . 0) ; variable number
      (#\W . 0) ; a GEN that is an lvalue

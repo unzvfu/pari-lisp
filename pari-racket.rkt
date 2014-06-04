@@ -170,8 +170,8 @@
      ;; (define (scm-fn x) (* x (+ 7 x)))
      ;; (define c-ptr-to-scm-fn
      ;;   (function-ptr scm-fn (_fun _long -> _long)))
-     ;; (define-blah capply
-     ;;   (_fun (_pointer = c-ptr-to-scm-fn) _long -> _long))
+     ;; (define-blah capply (_fun _pointer _long -> _long))
+     ;; (capply c-ptr-to-scm-fn 3) ; OUT> 30
      ;;
      ;; Can create a closure with snm_closure() in libpari, which
      ;; takes an entree* and a t_VEC of data.  An entree* contains

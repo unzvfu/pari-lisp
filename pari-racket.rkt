@@ -138,7 +138,7 @@
 (define return-types
   #hash((#\i . _int)
         (#\l . _long)
-	(#\u . _ulong)
+        (#\u . _ulong)
         (#\v . _void)
         ;; FIXME: GEN which is not gerepileupto-safe
         (#\m . _GEN)))

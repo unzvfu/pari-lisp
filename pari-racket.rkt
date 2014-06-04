@@ -106,13 +106,15 @@
 (define-pari gp-read-str (_fun _string -> _pointer)
   #:c-id gp_read_str)
 
+(define _realprec _long)
+(define _seriesprec _long)
 (define-pari gadd (_fun _GEN _GEN -> _GEN))
 (define-pari gsub (_fun _GEN _GEN -> _GEN))
 (define-pari gneg (_fun _GEN -> _GEN))
 (define-pari gmul (_fun _GEN _GEN -> _GEN))
 (define-pari gdiv (_fun _GEN _GEN -> _GEN))
 (define-pari gsqr (_fun _GEN -> _GEN))
-(define-pari gsqrtn (_fun _GEN _GEN (zetan : (_ptr o _GEN)) _long
+(define-pari gsqrtn (_fun _GEN _GEN (zetan : (_ptr o _GEN)) _realprec
                           -> (res : _GEN)
                           -> (values res zetan)))
 

@@ -163,6 +163,7 @@
 ;; is followed by a non-optional parameter with no default, so we will
 ;; need to transform this somehow, since once a parameter has been
 ;; made optional, all following parameters must also have defaults.
+;; Maybe the 'case-lambda' construction will be useful here?
 ;(define-pari forprime (_fun _variable _GEN _GEN (_fun -> _void)
 ;                       -> void))
 

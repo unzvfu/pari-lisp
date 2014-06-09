@@ -274,3 +274,9 @@
          [args (map (λ (k) (hash-ref arg-types k))
                     (string->list (substring proto (if rtn 1 0))))])
     (list* (if rtn rtn '_GEN) '-> args)))
+
+(define (desc-with-ch-in-proto d ch)
+  (filter (λ (h)
+             (let ([res (hash-ref h "Prototype" #f)])
+               (and res (index-of (string->list res) ch))))
+          d))

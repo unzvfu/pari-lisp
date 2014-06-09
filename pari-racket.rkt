@@ -233,8 +233,10 @@
      (#\J . 0) ; implicit function of one argument (as in parsum loops)
      ;; Automatic arguments
      (#\f . 0) ; fake long* (i.e. unused return-value parameter)
-     (#\p . 0) ; real precision
-     (#\P . 0) ; series precision
+     ; real precision (FIXME: Use getrealprecision() instead of '3')
+     (#\p . ,(λ (str) (values '(_realprec = 3) (substring str 1))))
+     ; series precision  (FIXME: Use getseriesprecision() instead of '3')
+     (#\P . ,(λ (str) (values '(_seriesprec = 3) (substring str 1))))
      ;; Syntax requirements
      (#\= . 0)
      ;; Optional arguments and default values

@@ -77,3 +77,20 @@
 (define (file->fields fname)
   (map (compose1 make-immutable-hash desclist->fieldlist)
        (lines->desclist (file->lines fname))))
+
+
+;; Reimplementation of above but using the stream generic method.
+(define (line-is-not-empty line)
+  (not (string=? line "")))
+
+(struct desc-iter (lines)
+  #:methods gen:stream
+  [(define (stream-empty? iter)
+     (empty? (desc-iter-lines iter)))
+   (define (stream-first iter)
+     (takef (desc-iter-lines iter) line-is-not-empty))
+   (define (stream-rest iter)
+     (let ([rest (dropf (desc-iter-lines iter) line-is-not-empty)])
+       (desc-iter (if (empty? rest)
+                      rest
+                      (drop rest 1)))))])

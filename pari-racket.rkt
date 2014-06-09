@@ -51,9 +51,9 @@
 (struct gen-hdl (ref [str #:auto #:mutable])
         #:auto-value #f
         ;; ref must be a GEN.
-        #:guard (lambda (ref type-name)
-                  (cond [(GEN? ref) ref]
-                        [else (error type-name "bad gen ref: ~e" ref)]))
+        #:guard (λ (ref type-name)
+                   (cond [(GEN? ref) ref]
+                         [else (error type-name "bad gen ref: ~e" ref)]))
         #:methods gen:custom-write
         [(define write-proc gen-print)])
 
@@ -198,18 +198,18 @@
 ;; returning the argument type and the unconsumed string.
 (define arg-types
   ;; NB: Can't use #hash(...) here because it QUOTEs its arguments,
-  ;; which makes specifying lambda's impossible; we need to QUASIQUOTE
+  ;; which makes specifying λ's impossible; we need to QUASIQUOTE
   ;; then UNQUOTE.
   (make-immutable-hash
    `(;; Mandatory arguments
-     (#\G . ,(lambda (str) (values '_GEN (substring str 1))))
+     (#\G . ,(λ (str) (values '_GEN (substring str 1))))
      ; Should convert to a function that returns multiple values.
      ; When the reference is optional (i.e. the code is "D&"), we
      ; should pass a flag regarding whether or not the user wishes to
      ; calculate it; or we could just *always* calculate it.
      (#\& . 0) ; GEN*
-     (#\L . ,(lambda (str) (values '_long (substring str 1))))
-     (#\U . ,(lambda (str) (values '_ulong (substring str 1))))
+     (#\L . ,(λ (str) (values '_long (substring str 1))))
+     (#\U . ,(λ (str) (values '_ulong (substring str 1))))
      (#\V . 0) ; Loop variable (unnecessary?)
      (#\n . 0) ; variable number
      (#\W . 0) ; a GEN that is an lvalue
@@ -271,6 +271,6 @@
 
 (define (gp-proto-to-func-type proto)
   (let* ([rtn (hash-ref return-types (string-ref proto 0) #f)]
-         [args (map (lambda (k) (hash-ref arg-types k))
+         [args (map (λ (k) (hash-ref arg-types k))
                     (string->list (substring proto (if rtn 1 0))))])
     (list* (if rtn rtn '_GEN) '-> args)))

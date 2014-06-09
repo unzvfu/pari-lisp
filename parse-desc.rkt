@@ -27,8 +27,8 @@
 (define (next-func-desc lines)
   (let-values ([(desc rest)
                 (splitf-at lines
-                           (lambda (line)
-                             (not (equal? line ""))))])
+                           (λ (line)
+                              (not (equal? line ""))))])
     (values desc (drop rest 1))))
 
 (define (starts-with? str ch)

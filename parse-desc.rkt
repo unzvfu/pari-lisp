@@ -14,17 +14,9 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #lang racket
+(require "utils.rkt")
 
 (define descpath "/home/hlaw/src/pari/src/desc/pari.desc")
-
-;; FIXME: It's hard to believe that this function doesn't exist
-;; somewhere in Racket.  But
-;;   http://stackoverflow.com/a/15871126
-(define (index-of lst ele)
-  (let loop ([lst lst] [idx 0])
-    (cond [(empty? lst) #f]
-          [(equal? (first lst) ele) idx]
-          [else (loop (rest lst) (add1 idx))])))
 
 (define (line->pair line)
   (let* ([idx (index-of (string->list line) #\:)]

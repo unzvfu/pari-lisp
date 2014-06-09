@@ -19,7 +19,10 @@
 
 #lang racket
 
-(provide index-of)
+(provide index-of
+         string-index-of
+         string-split-at
+         member?)
 
 ;; FIXME: It's hard to believe that this function doesn't exist
 ;; somewhere in Racket.  But
@@ -29,3 +32,25 @@
     (cond [(empty? lst) #f]
           [(equal? (first lst) ele) idx]
           [else (loop (rest lst) (add1 idx))])))
+
+(define (string-first str x)
+  (for/first ([ch (in-string str)]
+              #:when (char=? ch x))
+    i))
+
+(define (string-index-of str ch)
+  (let ([len (string-length str)])
+    (let loop ([i 0])
+      (cond [(= len i) #f]
+            [(equal? (string-ref str i) ch) i]
+            [else (loop (add1 i))]))))
+
+(define (string-split-at str ch)
+  (let ([idx (string-index-of str ch)])
+    (if (not idx)
+        idx
+        (values (substring str 0 idx) (substring str (add1 idx))))))
+
+(define (member? target seq)
+  (sequence-ormap (lambda (curr) (equal? curr target)) seq))
+

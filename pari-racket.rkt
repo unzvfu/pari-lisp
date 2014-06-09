@@ -29,6 +29,7 @@
 #lang racket
 (require ffi/unsafe
          ffi/unsafe/define)
+(require "utils.rkt")
 
 (define *path-to-libpari* "/home/hlaw/local/lib/libpari.so")
 
@@ -240,22 +241,6 @@
      (#\* . 0) ; Only valid after E or s
      (#\D . 0) ;,handle-default) ; Default value follows: Dvalue,type,
      )))        ; Special treatment of D when followed by G&rsVIEn
-
-(define (string-index-of str ch)
-  (let ([len (string-length str)])
-    (let loop ([i 0])
-      (cond [(= len i) #f]
-            [(equal? (string-ref str i) ch) i]
-            [else (loop (add1 i))]))))
-
-(define (string-split-at str ch)
-  (let ([idx (string-index-of str ch)])
-    (if (not idx)
-        idx
-        (values (substring str 0 idx) (substring str (add1 idx))))))
-
-(define (member? target seq)
-  (sequence-ormap (lambda (curr) (equal? curr target)) seq))
 
 ;; Given a prototype string of the form "DV,T,", returns values of a
 ;; ctype corresponding to T and a V of type T.

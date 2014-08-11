@@ -31,6 +31,7 @@
          ffi/unsafe/define)
 (require "utils.rkt")
 
+;; FIXME: Clearly this should be more path-independent.
 (define *path-to-libpari* "/home/hlaw/local/lib/libpari.so")
 
 (define libpari (ffi-lib *path-to-libpari*))

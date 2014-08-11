@@ -70,7 +70,7 @@
 
 ;; Conversion routines return _pointers.
 (define-pari stoi (_fun _long -> _pointer))
-(define-pari utoi (_fun _ulong -> _pointer))  ; Unnecessary?
+(define-pari utoi (_fun _ulong -> _pointer))
 (define-pari dbltor (_fun _double -> _pointer))
 (define-pari gtos (_fun _pointer -> _long))
 (define-pari gtodouble (_fun _pointer -> _double))

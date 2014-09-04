@@ -26,6 +26,11 @@
 ;; [2,3;3,4]
 
 
+;; Implementation ideas:
+;;
+;; - All Pari constructs replaced by streams?  E.g. forprime is a
+;;   stream returning prime numbers.
+
 #lang racket
 (require ffi/unsafe
          ffi/unsafe/define)
@@ -202,8 +207,12 @@
 ;; We really want this to be used like so:
 ;; (forprime [p 2 1000]
 ;;   (let ([q (* p p)])
-;;     (display q)))
+;;     (displayln q)))
 ;; in which the second argument is a progn.
+;; OR, like so
+;; (for/list ([p (in-stream (prime-stream 2 1000))])
+;;   (let ([q (* p p)])
+;;     (displayln q)))
 ;; NB: Here the third parameter (the second GEN) is optional, but it
 ;; is followed by a non-optional parameter with no default, so we will
 ;; need to transform this somehow, since once a parameter has been

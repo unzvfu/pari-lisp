@@ -14,6 +14,9 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #lang racket
+
+(provide read-function-descriptions)
+
 (require "utils.rkt")
 
 (define descpath "/home/hlaw/src/pari/src/desc/pari.desc")
@@ -48,6 +51,8 @@
 (define (join-at-field-continuation lines)
   (foldl field-acc '() lines))
 
-(define (myread lines)
+(define (read-function-descriptions)
   (map (λ (x) (map line->pair x))
-       (group-at-blank-lines (join-at-field-continuation lines))))
+       (group-at-blank-lines
+        (join-at-field-continuation
+         (file->lines descpath)))))

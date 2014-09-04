@@ -28,7 +28,9 @@
   (string=? s ""))
 
 (define (starts-with? s ch)
-  (char=? ch (string-ref s 0)))
+  (if (string-empty? s)
+      #f
+      (char=? ch (string-ref s 0))))
 
 (define (fndoc-acc x acc)
   (if (string-empty? x)
@@ -44,7 +46,7 @@
     (if (empty? (car res)) (cdr res) res)))
 
 (define (field-acc x acc)
-  (if (and (not (string-empty? x)) (starts-with? x #\space))
+  (if (starts-with? x #\space)
       (cons (string-append (car acc) (substring x 1))
             (cdr acc))
       (cons x acc)))

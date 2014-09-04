@@ -19,7 +19,7 @@
 
 #lang racket
 
-(provide index-of) 
+(provide index-of string-empty? string-starts-with?) 
 
 ;; FIXME: It's hard to believe that this function doesn't exist
 ;; somewhere in Racket.  But
@@ -29,3 +29,12 @@
     (cond [(empty? lst) #f]
           [(equal? (first lst) ele) idx]
           [else (loop (rest lst) (add1 idx))])))
+
+(define (string-empty? s)
+  (string=? s ""))
+
+(define (string-starts-with? s ch)
+  (if (string-empty? s)
+      #f
+      (char=? ch (string-ref s 0))))
+

@@ -314,7 +314,7 @@
 (define (parse-gp-proto proto)
   (reverse
    (let loop ([acc '()] [proto proto])
-     (if (= (string-length proto) 0)
+     (if (string-empty? proto)
          acc
          (let* ([code (string-ref proto 0)]
                 [parsefn (hash-ref arg-types code)])

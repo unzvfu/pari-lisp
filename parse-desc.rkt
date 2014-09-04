@@ -39,7 +39,9 @@
 
 (define (field-acc x acc)
   (if (string-starts-with? x #\space)
-      (cons (string-append (car acc) (substring x 1))
+      (cons (string-append (car acc)
+                           (string #\newline)
+                           (substring x 1))
             (cdr acc))
       (cons x acc)))
 

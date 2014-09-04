@@ -24,73 +24,34 @@
          [content (string-trim (substring line (add1 idx)))])
     (cons title content)))
 
-(define (next-func-desc lines)
-  (let-values ([(desc rest)
-                (splitf-at lines
-                           (λ (line)
-                              (not (equal? line ""))))])
-    (values desc (drop rest 1))))
+(define (string-empty? s)
+  (string=? s ""))
 
-(define (starts-with? str ch)
-  (equal? (string-ref str 0) ch))
+(define (starts-with? s ch)
+  (char=? ch (string-ref s 0)))
 
-(define (remove-head lst)
-  (values (car lst) (cdr lst)))
+(define (fndoc-acc x acc)
+  (if (string-empty? x)
+      ;; Only add a new list if the current head is not empty
+      (if (empty? (car acc)) acc (cons '() acc))
+      (cons (cons x (car acc)) (cdr acc))))
 
-(define (remove-tail lst)
-  (let-values ([(beginning last) (split-at-right lst 1)])
-    (values beginning (car last))))
+(define (group-at-blank-lines lines)
+  (let ([res (foldl fndoc-acc '(()) lines)])
+    ;; Remove empty list at front if there was one.  There will only
+    ;; ever be one, and then only if there were blank lines at the end
+    ;; of the file.
+    (if (empty? (car res)) (cdr res) res)))
 
-(define (stream->list fn lines)
-  (define (iter acc rest)
-    (if (empty? rest)
-        acc
-        (let-values ([(next tail) (fn rest)])
-          (iter (append acc (list next)) tail))))
-  (iter '() lines))
+(define (field-acc x acc)
+  (if (and (not (string-empty? x)) (starts-with? x #\space))
+      (cons (string-append (car acc) (substring x 1))
+            (cdr acc))
+      (cons x acc)))
 
-;; FIXME: Rewrite this in terms of stream->list
-(define (normalise-func-desc desc)
-  (define (iter first-bit last-bit)
-    (if (empty? last-bit)
-        first-bit
-        (let-values ([(elt rest) (remove-head last-bit)])
-          (iter
-           (if (starts-with? elt #\space)
-               (let-values ([(beginning tail) (remove-tail first-bit)])
-                 (append beginning
-                         (list (string-join (list tail (substring elt 1))
-                                            (string #\newline)))))
-               (append first-bit (list elt)))
-           rest))))
-  (iter '() desc))
+(define (join-at-field-continuation lines)
+  (foldl field-acc '() lines))
 
-(define (split-desc lines)
-  (stream->list next-func-desc lines))
-
-(define (lines->desclist lines)
-  (map normalise-func-desc (split-desc lines)))
-
-(define (desclist->fieldlist desclist)
-  (map line->pair desclist))
-
-(define (file->fields fname)
-  (map (compose1 make-immutable-hash desclist->fieldlist)
-       (lines->desclist (file->lines fname))))
-
-
-;; Reimplementation of above but using the stream generic method.
-(define (line-is-not-empty line)
-  (not (string=? line "")))
-
-(struct desc-iter (lines)
-  #:methods gen:stream
-  [(define (stream-empty? iter)
-     (empty? (desc-iter-lines iter)))
-   (define (stream-first iter)
-     (takef (desc-iter-lines iter) line-is-not-empty))
-   (define (stream-rest iter)
-     (let ([rest (dropf (desc-iter-lines iter) line-is-not-empty)])
-       (desc-iter (if (empty? rest)
-                      rest
-                      (drop rest 1)))))])
+(define (myread lines)
+  (map (λ (x) (map line->pair x))
+       (group-at-blank-lines (join-at-field-continuation lines))))

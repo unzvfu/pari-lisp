@@ -52,7 +52,7 @@
   (foldl field-acc '() lines))
 
 (define (read-function-descriptions)
-  (map (λ (x) (map line->pair x))
+  (map (λ (x) (make-immutable-hash (map line->pair x)))
        (group-at-blank-lines
         (join-at-field-continuation
          (file->lines descpath)))))

@@ -181,7 +181,7 @@
            -> (values ,ret ,@(hook-return-values h)))))
 
 ;; NB: Result of this function can be executed with
-;; (define pari-ns (make-base-namespace))
+;; (define pari-ns (make-base-namespace)) ; Not sure this is necessary.
 ;; (eval (activtate-hook h) pari-ns)
 (define (activate-hook h)
   `(define-pari

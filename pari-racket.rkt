@@ -173,14 +173,11 @@
 ;; GEN characteristic(GEN x) "mG":
 ;; The 'm' means the function is 'shallow' in some sense; this is
 ;; resolved by simply copying the result.
-(define-pari characteristic/raw (_fun _GEN -> _GEN)
-  #:c-id characteristic)
-(define (characteristic x) (gcopy (characteristic/raw x)))
+(define-pari characteristic (_fun _GEN -> (r : _GEN) -> (gcopy r)))
 
 ;; GEN member_j(GEN x) "mG" (the .j member function):
-(define-pari .j/raw (_fun _GEN -> _GEN)
+(define-pari .j (_fun _GEN -> (r : _GEN) -> (gcopy r))
   #:c-id member_j)
-(define (.j x) (gcopy (.j/raw x)))
 
 ;; Elliptic curves
 (define-pari ellfromj (_fun _GEN -> _GEN))

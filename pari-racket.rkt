@@ -165,11 +165,6 @@
      ,(hook-to-prototype h)
      #:c-id ,(string->symbol (hook-c-name h))))
 
-;; long u_lvalrem(ulong x, ulong y, ulong *r):
-(define-pari u_lvalrem (_fun _ulong _ulong (r : (_ptr o _ulong))
-                             -> (res : _long)
-                             -> (values res r)))
-
 ;; Some stack management functions:
 (define-pari gcopy (_fun _GEN -> _GEN))
 (define-pari gerepilecopy (_fun _pari_sp _GEN -> _GEN))

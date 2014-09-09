@@ -110,14 +110,12 @@
   (define (mkgenp p)
     (cpointer-push-tag! p 'GEN)
     p)
-  ;; FIXME: Handle scheme bignums (integer?) correctly
   (cond [(gen-hdl? x) (gen-hdl-ref x)]
         ;; FIXME: Not sure if should make gen_0 etc. _pointers instead
         ;; of _GENs.
         [(zero? x) (gen-hdl-ref gen_0)]
-        [(fixnum? x) (mkgenp (stoi x))]
-        [(flonum? x) (mkgenp (dbltor x))]
-        ;[(sequence? x) (mkgenp (scmseq->genvec x))]
+        [(number? x) (gp-read-str (number->string x))]
+        [(sequence? x) (mkgenp (scmseq->genvec x))]
         [else (error x "cannot be coverted to a GEN")]))
 
 (define (gen-to-scm x)

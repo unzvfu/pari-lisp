@@ -112,8 +112,7 @@
     (cpointer-push-tag! p 'GEN)
     p)
   (cond [(gen-hdl? x) (gen-hdl-ref x)]
-        [(zero? x) (gen-hdl-ref gen_0)]
-        [(integer? x) (mkgenp (gp-read-str (number->string x)))]
+        [(number? x) (mkgenp (gp-read-str (number->string x)))]
         [(sequence? x) (mkgenp (scmseq->genvec x))]
         [else (error x "cannot be coverted to a GEN")]))
 

@@ -73,12 +73,13 @@
 (define _pari_sp _ulong)
 (define-c avma libpari _pari_sp)
 
-;; Conversion routines return _pointers.
-(define-pari stoi (_fun _long -> _pointer))
-(define-pari utoi (_fun _ulong -> _pointer))
-(define-pari dbltor (_fun _double -> _pointer))
-(define-pari gtos (_fun _pointer -> _long))
-(define-pari gtodouble (_fun _pointer -> _double))
+(define-pari GENtostr (_fun _GEN -> _string))
+(define-pari gp-read-str (_fun _string -> _pointer)
+  #:c-id gp_read_str)
+
+;; FIXME: Used below in handle-default, but should probably be removed
+;; (and handle-default fixed).
+(define-pari gtolong (_fun _pointer -> _long))
 
 ;; Note: These types are defined in an enum at line 150 in
 ;; "src/headers/parigen.h".  The declaration starts:
@@ -111,10 +112,8 @@
     (cpointer-push-tag! p 'GEN)
     p)
   (cond [(gen-hdl? x) (gen-hdl-ref x)]
-        ;; FIXME: Not sure if should make gen_0 etc. _pointers instead
-        ;; of _GENs.
         [(zero? x) (gen-hdl-ref gen_0)]
-        [(number? x) (gp-read-str (number->string x))]
+        [(integer? x) (mkgenp (gp-read-str (number->string x)))]
         [(sequence? x) (mkgenp (scmseq->genvec x))]
         [else (error x "cannot be coverted to a GEN")]))
 
@@ -133,10 +132,6 @@
 (define-pari gen_1 _GEN)
 (define-pari gen_m1 _GEN)
 (define-pari gen_2 _GEN)
-
-(define-pari GENtostr (_fun _GEN -> _string))
-(define-pari gp-read-str (_fun _string -> _pointer)
-  #:c-id gp_read_str)
 
 (define _realprec _long)
 (define _seriesprec _long)

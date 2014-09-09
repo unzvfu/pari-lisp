@@ -304,7 +304,7 @@
             ;; accessible.  Also, need to check what other types are
             ;; possible.
             (cond [(equal? typecode '_GEN) val]
-                  [(equal? typecode '_long) (gtos val)]
+                  [(equal? typecode '_long) (gtolong val)]
                   [else (error typecode "not recognised")]))))
 
 (define (parse-gp-proto proto)

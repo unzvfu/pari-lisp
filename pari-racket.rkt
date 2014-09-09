@@ -165,11 +165,31 @@
 (define-pari gdiv (_fun _GEN _GEN -> _GEN))
 (define-pari gsqr (_fun _GEN -> _GEN))
 (define-pari factor (_fun _GEN -> _GEN))
+;; GEN gsqrtn(GEN x, GEN n, GEN *z = NULL, long prec) "GGD&p"
 (define-pari gsqrtn (_fun _GEN _GEN (zetan : (_ptr o _GEN)) _realprec
                           -> (res : _GEN)
                           -> (values res zetan)))
 
-;; long u_lvalrem(ulong x, ulong y, ulong *r) "lUUU&":
+;; NB Update with (struct-copy pari-hook curr-hook [c-name "asdf"])
+(struct hook
+  (gp-name c-name param-types return-type return-values))
+
+(define (hook-to-prototype h)
+  (let ([ret (gensym)])
+    `(_fun ,@(hook-param-types h)
+           -> (,ret : ,(hook-return-type h))
+           -> (values ,ret ,@(hook-return-values h)))))
+
+;; NB: Result of this function can be executed with
+;; (define pari-ns (make-base-namespace))
+;; (eval (activtate-hook h) pari-ns)
+(define (activate-hook h)
+  `(define-pari
+     ,(string->symbol (hook-gp-name h))
+     ,(hook-to-prototype h)
+     #:c-id ,(string->symbol (hook-c-name h))))
+
+;; long u_lvalrem(ulong x, ulong y, ulong *r):
 (define-pari u_lvalrem (_fun _ulong _ulong (r : (_ptr o _ulong))
                              -> (res : _long)
                              -> (values res r)))

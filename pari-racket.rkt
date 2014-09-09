@@ -80,46 +80,30 @@
 (define-pari gtos (_fun _pointer -> _long))
 (define-pari gtodouble (_fun _pointer -> _double))
 
-;; FIXME: Make second parameter a proper type for the t_* types.
-;; Note: said types are defined in an enum at line 150 in
-;; "src/headers/parigen.h":
+;; Note: These types are defined in an enum at line 150 in
+;; "src/headers/parigen.h".  The declaration starts:
 ;; /* DO NOT REORDER THESE
 ;;  * actual values can be changed. Adapt lontyp in gen2.c */
 ;; enum {
 ;;   t_INT    =  1,
 ;;   t_REAL   =  2,
-;;   t_INTMOD =  3,
-;;   t_FRAC   =  4,
-;;   t_FFELT  =  5,
-;;   t_COMPLEX=  6,
-;;   t_PADIC  =  7,
-;;   t_QUAD   =  8,
-;;   t_POLMOD =  9,
-;;   t_POL    =  10,
-;;   t_SER    =  11,
-;;   t_RFRAC  =  13,
-;;   t_QFR    =  15,
-;;   t_QFI    =  16,
-;;   t_VEC    =  17,
-;;   t_COL    =  18,
-;;   t_MAT    =  19,
-;;   t_LIST   =  20,
-;;   t_STR    =  21,
-;;   t_VECSMALL= 22,
-;;   t_CLOSURE = 23,
-;;   t_ERROR   = 24,
-;;   t_INFINITY= 25
+;;   ...
 ;; };
+;;
+;; FIXME: It would be better to read these in each time if possible,
+;; to avoid dealing with possible value changes.
+
+;; Subtype codes needed later
+(define t_VEC 17)
 
 (define-pari cgetg (_fun _long _long -> _pointer))
 
-(define (scmseq->genvec s)
-  (let* ([lg (add1 (sequence-length s))]
-         [out (cgetg lg 17)])
-    (for ([off (in-range 1 lg)])
-      ;; FIXME: map over the sequence properly, to avoid the call to
-      ;; sequence-ref.
-      (ptr-set! out _pointer off (scm-to-gen (sequence-ref s (sub1 off)))))
+(define (scmseq->genvec in)
+  (let* ([lg (add1 (sequence-length in))]
+         [out (cgetg lg t_VEC)])
+    (for ([s (in-stream in)]
+          [off (in-naturals 1)])
+      (ptr-set! out _pointer off (scm-to-gen s)))
     out))
 
 (define (scm-to-gen x)

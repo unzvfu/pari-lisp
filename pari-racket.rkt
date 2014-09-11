@@ -249,12 +249,12 @@
      ; When the reference is optional (i.e. the code is "D&"), we
      ; should pass a flag regarding whether or not the user wishes to
      ; calculate it; or we could just *always* calculate it.
-     (#\& . 0) ; GEN*
+     (#\& . ,(λ (str) (values `(,(gensym) : (_ptr o _GEN)) (substring str 1))))
      (#\L . ,(λ (str) (values '_long (substring str 1))))
      (#\U . ,(λ (str) (values '_ulong (substring str 1))))
      (#\V . 0) ; Loop variable (unnecessary?)
      (#\n . 0) ; variable number
-     (#\W . 0) ; a GEN that is an lvalue
+     (#\W . 0) ; a GEN that is an lvalue (only used for list fns)
      (#\r . 0) ; "raw" input
      (#\s . 0) ; "expanded" string
      ;; Need to build closures from Racket functions.  Do this with

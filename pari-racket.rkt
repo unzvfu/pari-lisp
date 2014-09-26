@@ -74,10 +74,6 @@
 (define _pari_sp _ulong)
 (define-c avma libpari _pari_sp)
 
-(define-pari GENtostr (_fun _GEN -> _string))
-(define-pari gp-read-str (_fun _string -> _pointer)
-  #:c-id gp_read_str)
-
 ;; Note: These types are defined in an enum at line 150 in
 ;; "src/headers/parigen.h".  The declaration starts:
 ;; /* DO NOT REORDER THESE
@@ -118,6 +114,10 @@
 
 (define-cpointer-type _GEN #f scm-to-gen gen-to-scm)
 
+(define-pari GENtostr (_fun _GEN -> _string))
+(define-pari gp-read-str (_fun _string -> _pointer)
+  #:c-id gp_read_str)
+
 ;; Pari needs to be initialised in order to access things like avma,
 ;; gen_0, etc.
 (pari-init-opts (expt 2 24) 0 5)
@@ -128,6 +128,31 @@
 ;; NB Update with (struct-copy pari-hook curr-hook [c-name "asdf"])
 (struct hook
   (gp-name c-name param-types return-type return-values))
+
+(define empty-hook
+  (hook "" "" '() #f '()))
+
+(define (parse-simple typesym)
+  (λ (str h)
+     (values (struct-copy hook h
+                          [param-types (cons typesym (hook-param-types h))])
+             (substring str 1))))
+
+(define parse-gen (parse-simple '_GEN))
+(define parse-long (parse-simple '_long))
+(define parse-ulong (parse-simple '_ulong))
+
+     ; Should convert to a function that returns multiple values.
+     ; When the reference is optional (i.e. the code is "D&"), we
+     ; should pass a flag regarding whether or not the user wishes to
+     ; calculate it; or we could just *always* calculate it.
+(define (parse-ref str h)
+  (let ([ret (gensym)])
+    (values (struct-copy hook h
+                         [param-types (cons `(,ret : (_ptr o _GEN))
+                                            (hook-param-types h))]
+                         [return-values (cons ret (hook-return-values h))])
+            (substring str 1))))
 
 (define (hook-to-prototype h)
   (let ([ret (gensym)])
@@ -149,7 +174,6 @@
 (define-pari gerepilecopy (_fun _pari_sp _GEN -> _GEN))
 (define-pari gerepileupto (_fun _pari_sp _GEN -> _GEN))
 
-
 ;; We need to use these prototype codes to build wrappers for calls to
 ;; libpari functions.  For example, given "mDx,G," for a function "F"
 ;; we need to
@@ -169,22 +193,18 @@
         ;; FIXME: GEN which is not gerepileupto-safe
         (#\m . _GEN)))
 
-;; Each character maps to a function taking a string as input and
-;; returning the argument type and the unconsumed string.
+;; Each character maps to a function taking a string and current hook
+;; as input and returning the updated hook and the unconsumed string.
 (define arg-types
   ;; NB: Can't use #hash(...) here because it QUOTEs its arguments,
   ;; which makes specifying λ's impossible; we need to QUASIQUOTE
   ;; then UNQUOTE.
   (make-immutable-hash
    `(;; Mandatory arguments
-     (#\G . ,(λ (str) (values '_GEN (substring str 1))))
-     ; Should convert to a function that returns multiple values.
-     ; When the reference is optional (i.e. the code is "D&"), we
-     ; should pass a flag regarding whether or not the user wishes to
-     ; calculate it; or we could just *always* calculate it.
-     (#\& . ,(λ (str) (values `(,(gensym) : (_ptr o _GEN)) (substring str 1))))
-     (#\L . ,(λ (str) (values '_long (substring str 1))))
-     (#\U . ,(λ (str) (values '_ulong (substring str 1))))
+     (#\G . parse-gen)
+     (#\& . parse-ref)
+     (#\L . parse-long)
+     (#\U . parse-ulong)
      (#\V . 0) ; Loop variable (unnecessary?)
      (#\n . 0) ; variable number
      (#\W . 0) ; a GEN that is an lvalue (only used for list fns)

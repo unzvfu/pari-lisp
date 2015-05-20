@@ -37,3 +37,19 @@
       #f
       (char=? ch (string-ref s 0))))
 
+;; Somewhat strangely, the implementation used is faster than this
+;; commented-out one by around 10-30% on average.
+;;
+;; (define (string-reverse-2 s)
+;;   (let* ([len (string-length s)]
+;;          [t (make-string len)])
+;;     (for ([i (in-range len)])
+;;       (string-set! t i (string-ref s (- len i 1))))
+;;     t))
+(define (string-reverse s)
+  (let ([t (string-copy s)]
+        [len (string-length s)])
+    (for ([i (in-range (/ len 2))])
+      (string-set! t i (string-ref s (- len i 1)))
+      (string-set! t (- len i 1) (string-ref s i)))
+    t))

@@ -19,16 +19,15 @@
 
 #lang racket
 
-(provide index-of string-empty? string-starts-with?) 
+(provide string-index-of
+         string-empty?
+         string-starts-with?
+         string-reverse)
 
-;; FIXME: It's hard to believe that this function doesn't exist
-;; somewhere in Racket.  But
-;;   http://stackoverflow.com/a/15871126
-(define (index-of lst ele)
-  (let loop ([lst lst] [idx 0])
-    (cond [(empty? lst) #f]
-          [(equal? (first lst) ele) idx]
-          [else (loop (rest lst) (add1 idx))])))
+(define (string-index-of str ch)
+  (for/or ([idx (in-range (string-length str))]
+           #:when (eq? (string-ref str idx) ch))
+    idx))
 
 (define (string-empty? s)
   (string=? s ""))

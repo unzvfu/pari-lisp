@@ -33,23 +33,31 @@
 
 #lang racket
 (require ffi/unsafe
-         ffi/unsafe/define)
-(require "utils.rkt")
-(require "parse-desc.rkt")
+         ffi/unsafe/define
+         ffi/unsafe/alloc)
 
 ;; FIXME: Clearly this should be more path-independent.
 (define *path-to-libpari* "/home/hlaw/local/lib/libpari.so")
 
+(define *pari-root* (getenv "PARI_ROOT"))
+
 (define libpari (ffi-lib *path-to-libpari*))
 (define-ffi-definer define-pari libpari)
 
-(define-pari pari-init (_fun _size _ulong -> _void)
+(define-pari pari-init
+  (_fun _size _ulong -> _void)
   #:c-id pari_init)
-(define-pari pari-init-opts (_fun _size _ulong _ulong -> _void)
+
+(define-pari pari-init-opts
+  (_fun _size _ulong _ulong -> _void)
   #:c-id pari_init_opts)
-(define-pari pari-close (_fun -> _void)
+
+(define-pari pari-close
+  (_fun -> _void)
   #:c-id pari_close)
-(define-pari pari-close-opts (_fun _ulong -> _void)
+
+(define-pari pari-close-opts
+  (_fun _ulong -> _void)
   #:c-id pari_close_opts)
 
 (define (gen-print x port mode)
@@ -72,7 +80,7 @@
 
 ;; Pari stack
 (define _pari_sp _ulong)
-(define-c avma libpari _pari_sp)
+(define-c avma libpari _pari_sp) ; FIXME: Find out how to call this *avma*
 
 ;; Note: These types are defined in an enum at line 150 in
 ;; "src/headers/parigen.h".  The declaration starts:
@@ -97,185 +105,141 @@
          [out (cgetg lg t_VEC)])
     (for ([s (in-stream in)]
           [off (in-naturals 1)])
-      (ptr-set! out _pointer off (scm-to-gen s)))
+      (ptr-set! out _pointer off (scm->gen s)))
     out))
 
-(define (scm-to-gen x)
-  (define (mkgenp p)
-    (cpointer-push-tag! p 'GEN)
-    p)
-  (cond [(gen-hdl? x) (gen-hdl-ref x)]
-        [(number? x) (mkgenp (gp-read-str (number->string x)))]
-        [(sequence? x) (mkgenp (scmseq->genvec x))]
-        [else (error x "cannot be coverted to a GEN")]))
+;; TODO: Write a number->t_INT function using integer->integer-bytes
+;; to write directly into the memory of the GEN.  Would like to do the
+;; same for real->floating-point-bytes, though it's less obvious how
+;; to do this in high precision (i.e. might need more than 8 bytes to
+;; store it).
+;;(define *bytes-in-word* 4) ; FIXME
+;;(define (bigint->bigint-bytes src dest)
+;;  (let* ([nwords 0]
+;;         [nbytes (/ nwords *bytes-in-word*)])
+;;    (integer->integer-bytes src *bytes-in-word*
+;;                            (system-big-endian?) dest)))
 
-(define (gen-to-scm x)
+;;(define (scmint->genint x)
+;;  (let ([z (cgetg lg t_INT)])
+;;    (bigint->bigint-bytes x (off1 (gen-hdl-ref z)))
+;;    z))
+
+(define (scm->gen x)
+  (let ([mkgenp (λ (p)
+                  (cpointer-push-tag! p 'GEN)
+                  p)])
+    (cond [(gen-hdl? x) (gen-hdl-ref x)]
+          ;; TODO: See if it's faster to use (number->string x r) for
+          ;; radix r = 16, 32 or 2^64 for example.
+          [(number? x) (mkgenp (gp-read-str (number->string x)))]
+          [(sequence? x) (mkgenp (scmseq->genvec x))]
+          [else (error x "cannot be coverted to a GEN")])))
+
+(define (gen->scm x)
   (gen-hdl x))
 
-(define-cpointer-type _GEN #f scm-to-gen gen-to-scm)
+(define-cpointer-type _GEN #f scm->gen gen->scm)
 
 (define-pari GENtostr (_fun _GEN -> _string))
 (define-pari gp-read-str (_fun _string -> _pointer)
   #:c-id gp_read_str)
 
+;; FIXME: Use getrealprecision()?
+(define *real-prec* 3)
+(define *series-prec* 3)
+
+(define-pari gclone (_fun _GEN -> _GEN))
+
 ;; Pari needs to be initialised in order to access things like avma,
 ;; gen_0, etc.
-(pari-init-opts (expt 2 24) 0 5)
+(define *default-stack-size* (expt 2 24))  ; 16MiB
+(define *default-prime-limit* 0)  ; Default default
+(define *signal-options* 5) ; FIXME: Document why this is necessary
+(define *orig-avma* 0)
 
-(define _realprec _long)
-(define _seriesprec _long)
+(define (pari-start-session)
+  (pari-init-opts *default-stack-size*
+                  *default-prime-limit*
+                  *signal-options*)
+  (set! *orig-avma* avma))
 
-;; NB Update with (struct-copy pari-hook curr-hook [c-name "asdf"])
-(struct hook
-  (gp-name c-name param-types return-type return-values))
+(define (pari-end-session)
+  (pari-close-opts *signal-options*))
 
-(define empty-hook
-  (hook "" "" '() #f '()))
+(define-fun-syntax _realprec
+  (syntax-id-rules (_realprec)
+    [_realprec (type: _long expr: *real-prec*)]))
 
-(define (parse-simple typesym)
-  (λ (str h)
-     (values (struct-copy hook h
-                          [param-types (cons typesym (hook-param-types h))])
-             (substring str 1))))
+(define-fun-syntax _seriesprec
+  (syntax-id-rules (_seriesprec)
+    [_seriesprec (type: _long expr: *series-prec*)]))
 
-(define parse-gen (parse-simple '_GEN))
-(define parse-long (parse-simple '_long))
-(define parse-ulong (parse-simple '_ulong))
+(define (postprocess args)
+  (let ([clones (map gclone args)])
+    (set! avma *orig-avma*)
+    (apply values clones)))
 
-     ; Should convert to a function that returns multiple values.
-     ; When the reference is optional (i.e. the code is "D&"), we
-     ; should pass a flag regarding whether or not the user wishes to
-     ; calculate it; or we could just *always* calculate it.
-(define (parse-ref str h)
-  (let ([ret (gensym)])
-    (values (struct-copy hook h
-                         [param-types (cons `(,ret : (_ptr o _GEN))
-                                            (hook-param-types h))]
-                         [return-values (cons ret (hook-return-values h))])
-            (substring str 1))))
+(define-pari ellfromj
+  (_fun _GEN
+        -> (res : _GEN)
+        -> (postprocess (list res)))
+  #:c-id ellfromj)
 
-(define (hook-to-prototype h)
-  (let ([ret (gensym)])
-    `(_fun ,@(hook-param-types h)
-           -> (,ret : ,(hook-return-type h))
-           -> (values ,ret ,@(hook-return-values h)))))
+(define-pari sqrtn
+  (_fun _GEN _GEN (zetan : (_ptr o _GEN)) _realprec
+        -> (res : _GEN)
+        -> (postprocess (list res zetan)))
+  #:c-id gsqrtn)
 
-;; NB: Result of this function can be executed with
-;; (define pari-ns (make-base-namespace)) ; Not sure this is necessary.
-;; (eval (activtate-hook h) pari-ns)
-(define (activate-hook h)
-  `(define-pari
-     ,(string->symbol (hook-gp-name h))
-     ,(hook-to-prototype h)
-     #:c-id ,(string->symbol (hook-c-name h))))
+;; What is the difference between make-ctype, _pointer, _cpointer and
+;; define-cpointer-type?
+;;
+;; - define-cpointer-type is a macro version of _cpointer, which
+;; provides a predicate and names the tag properly.
+;;
+(define _GEN-or-null
+  (make-ctype
+   _GEN
+   (lambda (v) (and v (gen->scm v)))
+   (lambda (v) (and v (scm->gen v)))))
 
-;; Some stack management functions:
-(define-pari gcopy (_fun _GEN -> _GEN))
-(define-pari gerepilecopy (_fun _pari_sp _GEN -> _GEN))
-(define-pari gerepileupto (_fun _pari_sp _GEN -> _GEN))
+;; FIXME: For some reason the _or-null business prevents scm->gen
+;; from being called, so for example (gcd 12 4) gives an error saying
+;; that 4 is not a the correct type.  It works if one converts 4 to a
+;; GEN manually: (gcd 12 (scm->gen 4)) ~> 4.  It always works as
+;; expected when the second argument is omitted (so takes its default
+;; value #f, hence passes NULL to Pari).
+(define-pari gcd
+  ;; Type code GDG
+  (_fun (x [y #f]) :: (x : _GEN) (y : _GEN-or-null) ; (y : (_or-null _GEN))
+        -> (res : _GEN)
+        -> (postprocess (list res)))
+  #:c-id ggcd0)
 
-;; We need to use these prototype codes to build wrappers for calls to
-;; libpari functions.  For example, given "mDx,G," for a function "F"
-;; we need to
-;; - produce the function signature (_fun _GEN -> _GEN) for F,
-;; - call (define-pari F/raw signature #:c-id F)
-;; - write a wrapper for F which
-;;   - sets the argument to x if not specified,
-;;   - calls F/raw
-;;   - calls gcopy on the result (because of the "m")
+(define-pari type
+  (_fun _GEN -> _GEN)
+  #:c-id type0)
 
-;; Documentation for GP prototypes is in Section 5.8.3.
-(define return-types
-  #hash((#\i . _int)
-        (#\l . _long)
-        (#\u . _ulong)
-        (#\v . _void)
-        ;; FIXME: GEN which is not gerepileupto-safe
-        (#\m . _GEN)))
+(define-pari fetch-user-var
+  (_fun _string -> _long)
+  #:c-id fetch_user_var)
 
-;; Each character maps to a function taking a string and current hook
-;; as input and returning the updated hook and the unconsumed string.
-(define arg-types
-  ;; NB: Can't use #hash(...) here because it QUOTEs its arguments,
-  ;; which makes specifying λ's impossible; we need to QUASIQUOTE
-  ;; then UNQUOTE.
-  (make-immutable-hash
-   `(;; Mandatory arguments
-     (#\G . parse-gen)
-     (#\& . parse-ref)
-     (#\L . parse-long)
-     (#\U . parse-ulong)
-     (#\V . 0) ; Loop variable (unnecessary?)
-     (#\n . 0) ; variable number
-     (#\W . 0) ; a GEN that is an lvalue (only used for list fns)
-     (#\r . 0) ; "raw" input
-     (#\s . 0) ; "expanded" string
-     ;; Need to build closures from Racket functions.  Do this with
-     ;; code such as
-     ;;
-     ;; (define (scm-fn x) (* x (+ 7 x)))
-     ;; (define c-ptr-to-scm-fn
-     ;;   (function-ptr scm-fn (_fun _long -> _long)))
-     ;; (define-blah capply (_fun _pointer _long -> _long))
-     ;; (capply c-ptr-to-scm-fn 3) ; OUT> 30
-     ;;
-     ;; Can create a closure with snm_closure() in libpari, which
-     ;; takes an entree* and a t_VEC of data.  An entree* contains
-     ;; just plain old data, including a function pointer to the code
-     ;; to call.
-     (#\I . 0) ; Closure whose value is ignored (used in for loops)
-     (#\E . 0) ; Closure whose value is used (as in sum loops)
-     (#\J . 0) ; implicit function of one argument (as in parsum loops)
-     ;; Automatic arguments
-     (#\f . 0) ; fake long* (i.e. unused return-value parameter)
-     ; real precision (FIXME: Use getrealprecision() instead of '3')
-     (#\p . ,(λ (str) (values '(_realprec = 3) (substring str 1))))
-     ; series precision  (FIXME: Use getseriesprecision() instead of '3')
-     (#\P . ,(λ (str) (values '(_seriesprec = 3) (substring str 1))))
-     ;; Syntax requirements
-     (#\= . 0)
-     ;; Optional arguments and default values
-     (#\* . 0) ; Only valid after E or s
-     (#\D . 0) ;,handle-default) ; Default value follows: Dvalue,type,
-     )))        ; Special treatment of D when followed by G&rsVIEn
+(define (symbol->varn s)
+  (fetch-user-var (symbol->string s)))
 
-;; FIXME: Used below in handle-default, but should probably be removed
-;; (and handle-default fixed).
-(define-pari gtolong (_fun _pointer -> _long))
+(define-fun-syntax _variable
+  (syntax-id-rules (_variable)
+    [_variable (bind: s type: _long pre: (symbol->varn s))]))
 
-;; Given a prototype string of the form "DV,T,", returns values of a
-;; ctype corresponding to T and a V of type T.
-(define (handle-default proto)
-  (let* ([splt (string-split proto ",")]
-         [val (gp-read-str (substring (first splt) 1))]
-         [typecode (hash-ref arg-types (string-ref (second splt) 0))])
-    (values typecode
-            ;; FIXME: This cond statement should be put somewhere more
-            ;; accessible.  Also, need to check what other types are
-            ;; possible.
-            (cond [(equal? typecode '_GEN) val]
-                  [(equal? typecode '_long) (gtolong val)]
-                  [else (error typecode "not recognised")]))))
+(define-pari Pol
+  (_fun (t [v 'x]) :: (t : _GEN) (v : _variable)
+        -> (res : _GEN)
+        -> (postprocess (list res)))
+  #:c-id gtopoly)
 
-(define (parse-gp-proto proto)
-  (reverse
-   (let loop ([acc '()] [proto proto])
-     (if (string-empty? proto)
-         acc
-         (let* ([code (string-ref proto 0)]
-                [parsefn (hash-ref arg-types code)])
-           (let-values ([(arg rest) (parsefn proto)])
-             (loop (cons arg acc) rest)))))))
-
-
-(define (gp-proto-to-func-type proto)
-  (let* ([rtn (hash-ref return-types (string-ref proto 0) #f)]
-         [args (map (λ (k) (hash-ref arg-types k))
-                    (string->list (substring proto (if rtn 1 0))))])
-    (list* (if rtn rtn '_GEN) '-> args)))
-
-(define (desc-with-ch-in-proto d ch)
-  (filter (λ (h)
-             (let ([res (hash-ref h "Prototype" #f)])
-               (and res (index-of (string->list res) ch))))
-          d))
+(define-pari subst
+  (_fun (x y z) :: (x : _GEN) (y : _variable) (z : _GEN)
+        -> (res : _GEN)
+        -> (postprocess (list res)))
+  #:c-id gsubst)

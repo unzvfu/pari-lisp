@@ -1,4 +1,4 @@
-;; Copyright 2014 Hamish Ivey-Law
+;; Copyright 2014, 2015 Hamish Ivey-Law
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by

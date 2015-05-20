@@ -22,7 +22,7 @@
 (define descpath "/home/hlaw/src/pari/src/desc/pari.desc")
 
 (define (line->pair line)
-  (let* ([idx (index-of (string->list line) #\:)]
+  (let* ([idx (string-index-of line #\:)]
          [title (substring line 0 idx)]
          [content (string-trim (substring line (add1 idx)))])
     (cons title content)))

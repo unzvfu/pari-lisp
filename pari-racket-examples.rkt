@@ -65,3 +65,66 @@
 
 (define (* . args)
   (foldl gmul gen_1 args))
+
+(define (powers-of q0)
+  (generator ()
+             (let loop ([q q0])
+               (yield q)
+               (loop (* q q0)))))
+
+;; Based on the classno.gp example
+(define (cl d [cc 5])
+  (if (not (isfundamental (- d)))
+      (error "Discriminant not fundamental")
+      (let* ([sd (sqrt d)]
+             [q0 (exp (/ (* -2 Pi) sd))]
+             [c (/ (* -4 Pi) sd)]
+             [s (for/fold ([s 0])
+                          ([n (in-range 1 (ceil (* sd cc)))]
+                           [q (powers-of q0)])
+                  (let ([t (/ 1 (- 1 q))])
+                    (+ s (* (kronecker (- d) n) q t (+ 1 (* c t n))))))])
+        (* -2 s (cond [(= d 3) 3]
+                      [(= d 4) 2]
+                      [else 1])))))
+
+;; How would I garbage collect this?
+(define (gc-ex N)
+  (foldl + 0 (Vec 1 2 3))
+  (for/fold ([s 0]) ([n (Vec 1 2 3)])
+    (+ s n)))
+
+
+;; Garbage collection example
+(require ffi/unsafe/alloc)
+
+
+(define err (current-error-port))
+(define (finalize-capabilities-table ignored)
+  (fprintf err "finalizing capabilities table\n"))
+
+(define make-capabilities-table
+  ((allocator finalize-capabilities-table)
+   (lambda ()
+     (printf "creating capabilities table\n")
+     (list '(16 . drive)
+           '(18 . vote)
+           '(21 . drink)))))
+
+(make-capabilities-table)
+(collect-garbage)
+
+
+;; Need to build closures from Racket functions.  Do this with
+;; code such as
+;;
+;; (define (scm-fn x) (* x (+ 7 x)))
+;; (define c-ptr-to-scm-fn
+;;   (function-ptr scm-fn (_fun _long -> _long)))
+;; (define-blah capply (_fun _pointer _long -> _long))
+;; (capply c-ptr-to-scm-fn 3) ; OUT> 30
+;;
+;; Can create a closure with snm_closure() in libpari, which
+;; takes an entree* and a t_VEC of data.  An entree* contains
+;; just plain old data, including a function pointer to the code
+;; to call.

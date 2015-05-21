@@ -80,11 +80,30 @@
                           (cons name (proto-return-values p))])
             (substring str 1))))
 
+(define default-values
+  ;; G&rVIn
+  (make-immutable-hash
+   `((_GEN . #f)
+     (_long . 0)
+     (_ulong . 0)
+     ;; FIXME: Variable name should have been specified somewhere
+     (_variable . 'x)
+     ;; FIXME: Deal with '&'.
+     )))
+
 ;; Assume for now that we always get default arguments of the form
 ;; "Dtype", not "Dvalue,type,"
 (define (param-default p s)
- ;(let ([typ (string-ref s 1)]))
-  (values p s))
+  (let* ([names (proto-param-names p)]
+         [default-name
+           (list
+            (car names)
+            (hash-ref default-values
+              (third (car (proto-param-types p)))))])
+    (values (struct-copy proto p
+                         [param-names
+                          (cons default-name (cdr names))])
+            (substring s 1))))
 
 (define (proto-type-signature p)
   `(_fun ,@(proto-param-names p) :: ,@(proto-param-types p)
